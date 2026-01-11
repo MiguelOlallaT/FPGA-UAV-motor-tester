@@ -1,0 +1,53 @@
+# --- CLOCK ---
+NET "clk_50MHz" LOC = B8;
+NET "clk_50MHz" TNM_NET = clk50_net;
+TIMESPEC TS_clk50 = PERIOD "clk50_net" 20 ns HIGH 50%;
+
+# --- VGA ---
+NET "vga_hsync"   LOC = T4;
+NET "vga_vsync"   LOC = U3;
+NET "vga_red[0]"  LOC = R9;
+NET "vga_red[1]"  LOC = T8;
+NET "vga_red[2]"  LOC = R8;
+NET "vga_green[0]" LOC = N8;
+NET "vga_green[1]" LOC = P8;
+NET "vga_green[2]" LOC = P6;
+NET "vga_blue[0]" LOC = U5;
+NET "vga_blue[1]" LOC = U4;
+
+# --- SWITCHES ---
+#NET "sw[0]" LOC = G18;
+#NET "sw[1]" LOC = H18;
+#NET "sw[2]" LOC = K18;
+#NET "sw[3]" LOC = K17;
+#NET "sw[4]" LOC = L14;
+#NET "sw[5]" LOC = L13;
+#NET "sw[6]" LOC = N17;
+#NET "sw[7]" LOC = R17;
+
+# --- RESET ---
+# En muchos UCFs: BTN2 = E18, BTN0 = B18 (elige el que uses)
+# Si quieres usar BTN2 (muy típico):
+NET "reset" LOC = E18;
+
+# --- 7-SEG (common anode -> an/seg activos en 0) ---
+# an[0..3]
+NET "an[0]" LOC = F17;
+NET "an[1]" LOC = H17;
+NET "an[2]" LOC = C18;
+NET "an[3]" LOC = F15;
+
+# seg[0..6] = a..g (CA..CG)
+NET "seg[6]" LOC = L18;  # CA
+NET "seg[5]" LOC = F18;  # CB
+NET "seg[4]" LOC = D17;  # CC
+NET "seg[3]" LOC = D16;  # CD
+NET "seg[2]" LOC = G14;  # CE
+NET "seg[1]" LOC = J17;  # CF
+NET "seg[0]" LOC = H14;  # CG
+
+NET "dp"     LOC = C17;  # DP
+
+NET "hx_dout" LOC = <M15>;
+NET "hx_sck"  LOC = <L17>;
+
