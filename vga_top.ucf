@@ -48,6 +48,10 @@ NET "seg[0]" LOC = H14;  # CG
 
 NET "dp"     LOC = C17;  # DP
 
-NET "hx_dout" LOC = <M15>;
-NET "hx_sck"  LOC = <L17>;
-
+NET "hx_sck"   LOC = L15;
+NET "hx_dout0" LOC = K12;
+NET "hx_dout1" LOC = L17;
+NET "hx_dout2" LOC = M15;
+NET "hx_dout3" LOC = L16;
+NET "hx_dout4" LOC = M14;
+NET "hx_dout5" LOC = M16;
