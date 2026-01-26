@@ -10,46 +10,51 @@ entity vga_sync is
 	 green_out : out STD_LOGIC;
 	 blue_out : out STD_LOGIC;
 	 hsync : out STD_LOGIC;
- vsync : out STD_LOGIC;
- pixel_row : out STD_LOGIC_VECTOR (9 downto 0);
- pixel_col : out STD_LOGIC_VECTOR (9 downto 0));
+	vsync : out STD_LOGIC;
+	pixel_row : out STD_LOGIC_VECTOR (9 downto 0);
+	pixel_col : out STD_LOGIC_VECTOR (9 downto 0));
 end vga_sync;
+
 architecture Behavioral of vga_sync is
-signal h_cnt, v_cnt: STD_LOGIC_VECTOR (9 DOWNTO 0);
-begin
-sync_pr: process
-variable video_on: STD_LOGIC;
-begin
-wait until rising_edge(clock_25MHz);
+	signal h_cnt, v_cnt: STD_LOGIC_VECTOR (9 DOWNTO 0);
+	begin
+	sync_pr: process
+	
+		variable video_on: STD_LOGIC;
+	begin
+	
+		wait until rising_edge(clock_25MHz);
 
-if h_cnt >= 799 then
-h_cnt <= "0000000000"; else
-h_cnt <= h_cnt+1;
-end if;
-if (h_cnt >= 659) and (h_cnt <= 755) then
-hsync <= '0'; else
-hsync <= '1';
-end if;
+			if h_cnt >= 799 then
+			h_cnt <= "0000000000"; else
+			h_cnt <= h_cnt+1;
+			end if;
+			if (h_cnt >= 659) and (h_cnt <= 755) then
+			hsync <= '0'; else
+			hsync <= '1';
+			end if;
 
-if (v_cnt >= 524) and (h_cnt = 699) then
-v_cnt <= "0000000000";
-elsif h_cnt = 699 then
-v_cnt <= v_cnt+1;
-end if;
-if (v_cnt >= 493) and (v_cnt <= 494) then
-vsync <= '0'; else
-vsync <= '1';
-end if;
+			if (v_cnt >= 524) and (h_cnt = 699) then
+			v_cnt <= "0000000000";
+			elsif h_cnt = 699 then
+			v_cnt <= v_cnt+1;
+			end if;
+			if (v_cnt >= 493) and (v_cnt <= 494) then
+			vsync <= '0'; else
+			vsync <= '1';
+			end if;
 
-if (h_cnt <= 639) and (v_cnt <= 479) then
-video_on := '1'; else
-video_on := '0';
-end if;
-pixel_col <= h_cnt;
-pixel_row <= v_cnt;
+			if (h_cnt <= 639) and (v_cnt <= 479) then
+			video_on := '1'; else
+			video_on := '0';
+				end if;
+				
+		pixel_col <= h_cnt;
+		pixel_row <= v_cnt;
 
-red_out <= red and video_on;
-green_out <= green and video_on;
-blue_out <= blue and video_on;
-end process;
+		red_out <= red and video_on;
+		green_out <= green and video_on;
+		blue_out <= blue and video_on;
+	end process;
+
 end Behavioral;

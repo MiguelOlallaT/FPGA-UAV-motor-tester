@@ -9,7 +9,6 @@ entity hx711_reader is
   );
   port(
     clk          : in  std_logic;
-    reset        : in  std_logic;
 
     hx_dout0     : in  std_logic;
     hx_dout1     : in  std_logic;
@@ -106,17 +105,12 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
-      if reset = '1' then
+      if div_cnt = HALF_PERIOD-1 then
         div_cnt  <= 0;
-        sck_tick <= '0';
+        sck_tick <= '1';
       else
-        if div_cnt = HALF_PERIOD-1 then
-          div_cnt  <= 0;
-          sck_tick <= '1';
-        else
-          div_cnt  <= div_cnt + 1;
-          sck_tick <= '0';
-        end if;
+        div_cnt  <= div_cnt + 1;
+        sck_tick <= '0';
       end if;
     end if;
   end process;
@@ -125,70 +119,51 @@ begin
     variable bitpos : integer;
   begin
     if rising_edge(clk) then
-      if reset = '1' then
-        st       <= IDLE;
-        sck_int  <= '0';
-        fall_cnt <= 0;
-        shift0   <= (others => '0');
-        shift1   <= (others => '0');
-        shift2   <= (others => '0');
-        shift3   <= (others => '0');
-        shift4   <= (others => '0');
-        shift5   <= (others => '0');
-        raw_s0   <= (others => '0');
-        raw_s1   <= (others => '0');
-        raw_s2   <= (others => '0');
-        raw_s3   <= (others => '0');
-        raw_s4   <= (others => '0');
-        raw_s5   <= (others => '0');
-        valid_o  <= '0';
-      else
-        valid_o <= '0';
+      valid_o <= '0';
 
-        case st is
-          when IDLE =>
-            sck_int  <= '0';
-            fall_cnt <= 0;
-            if all_ready = '1' then
-              shift0 <= (others => '0');
-              shift1 <= (others => '0');
-              shift2 <= (others => '0');
-              shift3 <= (others => '0');
-              shift4 <= (others => '0');
-              shift5 <= (others => '0');
-              st <= ACTIVE;
-            end if;
+      case st is
+        when IDLE =>
+          sck_int  <= '0';
+          fall_cnt <= 0;
+          if all_ready = '1' then
+            shift0 <= (others => '0');
+            shift1 <= (others => '0');
+            shift2 <= (others => '0');
+            shift3 <= (others => '0');
+            shift4 <= (others => '0');
+            shift5 <= (others => '0');
+            st <= ACTIVE;
+          end if;
 
-          when ACTIVE =>
-            if sck_tick = '1' then
-              sck_int <= not sck_int;
+        when ACTIVE =>
+          if sck_tick = '1' then
+            sck_int <= not sck_int;
 
-              if sck_int = '1' then
-                if fall_cnt < 24 then
-                  bitpos := 23 - fall_cnt;
-                  shift0(bitpos) <= dout0_sync;
-                  shift1(bitpos) <= dout1_sync;
-                  shift2(bitpos) <= dout2_sync;
-                  shift3(bitpos) <= dout3_sync;
-                  shift4(bitpos) <= dout4_sync;
-                  shift5(bitpos) <= dout5_sync;
-                end if;
-                fall_cnt <= fall_cnt + 1;
+            if sck_int = '1' then
+              if fall_cnt < 24 then
+                bitpos := 23 - fall_cnt;
+                shift0(bitpos) <= dout0_sync;
+                shift1(bitpos) <= dout1_sync;
+                shift2(bitpos) <= dout2_sync;
+                shift3(bitpos) <= dout3_sync;
+                shift4(bitpos) <= dout4_sync;
+                shift5(bitpos) <= dout5_sync;
+              end if;
+              fall_cnt <= fall_cnt + 1;
 
-                if fall_cnt = 24 then
-                  raw_s0 <= shift0;
-                  raw_s1 <= shift1;
-                  raw_s2 <= shift2;
-                  raw_s3 <= shift3;
-                  raw_s4 <= shift4;
-                  raw_s5 <= shift5;
-                  valid_o <= '1';
-                  st <= IDLE;
-                end if;
+              if fall_cnt = 24 then
+                raw_s0 <= shift0;
+                raw_s1 <= shift1;
+                raw_s2 <= shift2;
+                raw_s3 <= shift3;
+                raw_s4 <= shift4;
+                raw_s5 <= shift5;
+                valid_o <= '1';
+                st <= IDLE;
               end if;
             end if;
-        end case;
-      end if;
+          end if;
+      end case;
     end if;
   end process;
 

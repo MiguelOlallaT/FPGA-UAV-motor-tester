@@ -16,19 +16,22 @@ NET "vga_blue[0]" LOC = U5;
 NET "vga_blue[1]" LOC = U4;
 
 # --- SWITCHES ---
-#NET "sw[0]" LOC = G18;
-#NET "sw[1]" LOC = H18;
-#NET "sw[2]" LOC = K18;
-#NET "sw[3]" LOC = K17;
-#NET "sw[4]" LOC = L14;
-#NET "sw[5]" LOC = L13;
-#NET "sw[6]" LOC = N17;
-#NET "sw[7]" LOC = R17;
+NET "sw[0]" LOC = G18;
+NET "sw[1]" LOC = H18;
+NET "sw[2]" LOC = K18;
+NET "sw[3]" LOC = K17;
+NET "sw[4]" LOC = L14;
+NET "sw[5]" LOC = L13;
+NET "sw[6]" LOC = N17;
+NET "sw[7]" LOC = R17;
 
 # --- RESET ---
 # En muchos UCFs: BTN2 = E18, BTN0 = B18 (elige el que uses)
-# Si quieres usar BTN2 (muy típico):
-NET "reset" LOC = E18;
+# Si quieres usar BTN2 (muy tpico):
+NET "btn_tare_par"  LOC = H13;
+NET "btn_cal_par"   LOC = E18;
+NET "btn_tare_peso" LOC = D18;
+NET "btn_cal_peso"  LOC = B18;
 
 # --- 7-SEG (common anode -> an/seg activos en 0) ---
 # an[0..3]
@@ -46,8 +49,6 @@ NET "seg[2]" LOC = G14;  # CE
 NET "seg[1]" LOC = J17;  # CF
 NET "seg[0]" LOC = H14;  # CG
 
-NET "dp"     LOC = C17;  # DP
-
 NET "hx_sck"   LOC = L15;
 NET "hx_dout0" LOC = K12;
 NET "hx_dout1" LOC = L17;
@@ -55,3 +56,5 @@ NET "hx_dout2" LOC = M15;
 NET "hx_dout3" LOC = L16;
 NET "hx_dout4" LOC = M14;
 NET "hx_dout5" LOC = M16;
+
+NET "pwm_out" LOC = U18;

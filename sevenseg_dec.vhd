@@ -10,10 +10,10 @@ entity sevenseg_dec13 is
   );
   port(
     clk      : in  std_logic;
-    reset    : in  std_logic;
-    value_in : in  std_logic_vector(12 downto 0);
+    value_main : in  std_logic_vector(13 downto 0);
+    value_alt  : in  std_logic_vector(7 downto 0);
+    sel_alt    : in  std_logic;
     seg      : out std_logic_vector(6 downto 0);
-    dp       : out std_logic;
     an       : out std_logic_vector(3 downto 0)
   );
 end entity;
@@ -26,6 +26,7 @@ architecture rtl_dec of sevenseg_dec13 is
   signal digit_sel : unsigned(1 downto 0) := (others => '0');
 
   signal bcd_reg : unsigned(15 downto 0) := (others => '0');
+  signal value_sel : unsigned(13 downto 0) := (others => '0');
 
   function dec_to_7seg_i(n : integer) return std_logic_vector is
     variable s : std_logic_vector(6 downto 0);
@@ -51,42 +52,38 @@ architecture rtl_dec of sevenseg_dec13 is
 
 begin
 
-  gen_dp_low_dec : if ACTIVE_LOW generate
-    dp <= '1';
-  end generate;
-  gen_dp_high_dec : if (not ACTIVE_LOW) generate
-    dp <= '0';
-  end generate;
+  process(value_main, value_alt, sel_alt)
+  begin
+    if sel_alt = '1' then
+      value_sel <= resize(unsigned(value_alt), 14);
+    else
+      value_sel <= unsigned(value_main);
+    end if;
+  end process;
 
   process(clk)
   begin
     if rising_edge(clk) then
-      if reset = '1' then
+      tick <= '0';
+      if div_cnt = DIV_TICKS-1 then
         div_cnt   <= 0;
-        tick      <= '0';
-        digit_sel <= (others => '0');
+        tick      <= '1';
+        digit_sel <= digit_sel + 1;
       else
-        tick <= '0';
-        if div_cnt = DIV_TICKS-1 then
-          div_cnt   <= 0;
-          tick      <= '1';
-          digit_sel <= digit_sel + 1;
-        else
-          div_cnt <= div_cnt + 1;
-        end if;
+        div_cnt <= div_cnt + 1;
       end if;
     end if;
   end process;
 
-  process(value_in)
+  process(value_sel)
     variable bcd : unsigned(15 downto 0);
-    variable bin : unsigned(12 downto 0);
+    variable bin : unsigned(13 downto 0);
     variable i   : integer;
   begin
-    bin := unsigned(value_in);
+    bin := value_sel;
     bcd := (others => '0');
 
-    for i in 12 downto 0 loop
+    for i in 13 downto 0 loop
       if bcd(3 downto 0)  >= 5 then bcd(3 downto 0)  := bcd(3 downto 0)  + 3; end if;
       if bcd(7 downto 4)  >= 5 then bcd(7 downto 4)  := bcd(7 downto 4)  + 3; end if;
       if bcd(11 downto 8) >= 5 then bcd(11 downto 8) := bcd(11 downto 8) + 3; end if;

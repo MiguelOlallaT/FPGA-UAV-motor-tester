@@ -4,27 +4,34 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity vga_top is
   Port (
-    clk_50MHz  : in  STD_LOGIC;
-    reset      : in  STD_LOGIC;
+    clk_50MHz     : in  STD_LOGIC;
 
-    hx_dout0   : in  STD_LOGIC;
-    hx_dout1   : in  STD_LOGIC;
-    hx_dout2   : in  STD_LOGIC;
-    hx_dout3   : in  STD_LOGIC;
-    hx_dout4   : in  STD_LOGIC;
-    hx_dout5   : in  STD_LOGIC;
+    sw            : in  STD_LOGIC_VECTOR(7 downto 0);
 
-    hx_sck     : out STD_LOGIC;
+    btn_tare_par  : in  STD_LOGIC;
+    btn_cal_par   : in  STD_LOGIC;
+    btn_tare_peso : in  STD_LOGIC;
+    btn_cal_peso  : in  STD_LOGIC;
 
-    vga_red    : out STD_LOGIC_VECTOR (2 downto 0);
-    vga_green  : out STD_LOGIC_VECTOR (2 downto 0);
-    vga_blue   : out STD_LOGIC_VECTOR (1 downto 0);
-    vga_hsync  : out STD_LOGIC;
-    vga_vsync  : out STD_LOGIC;
+    hx_dout0      : in  STD_LOGIC;
+    hx_dout1      : in  STD_LOGIC;
+    hx_dout2      : in  STD_LOGIC;
+    hx_dout3      : in  STD_LOGIC;
+    hx_dout4      : in  STD_LOGIC;
+    hx_dout5      : in  STD_LOGIC;
 
-    seg        : out STD_LOGIC_VECTOR(6 downto 0);
-    dp         : out STD_LOGIC;
-    an         : out STD_LOGIC_VECTOR(3 downto 0)
+    hx_sck        : out STD_LOGIC;
+
+    pwm_out       : out STD_LOGIC;
+
+    vga_red       : out STD_LOGIC_VECTOR (2 downto 0);
+    vga_green     : out STD_LOGIC_VECTOR (2 downto 0);
+    vga_blue      : out STD_LOGIC_VECTOR (1 downto 0);
+    vga_hsync     : out STD_LOGIC;
+    vga_vsync     : out STD_LOGIC;
+
+    seg           : out STD_LOGIC_VECTOR(6 downto 0);
+    an            : out STD_LOGIC_VECTOR(3 downto 0)
   );
 end vga_top;
 
@@ -35,33 +42,11 @@ architecture Behavioral of vga_top is
   signal pixel_row : std_logic_vector(9 downto 0);
   signal pixel_col : std_logic_vector(9 downto 0);
 
-  signal raw_s_slv0    : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_s_slv1    : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_s_slv2    : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_s_slv3    : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_s_slv4    : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_s_slv5    : std_logic_vector(23 downto 0) := (others => '0');
+  signal par_centi : std_logic_vector(31 downto 0) := (others => '0');
+  signal peso_deci : std_logic_vector(31 downto 0) := (others => '0');
+  signal peso_gram : std_logic_vector(13 downto 0) := (others => '0');
 
-  signal raw_std_slv0  : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_std_slv1  : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_std_slv2  : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_std_slv3  : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_std_slv4  : std_logic_vector(23 downto 0) := (others => '0');
-  signal raw_std_slv5  : std_logic_vector(23 downto 0) := (others => '0');
-
-  signal sample_valid0 : std_logic := '0';
-  signal sample_valid1 : std_logic := '0';
-  signal sample_valid2 : std_logic := '0';
-  signal sample_valid3 : std_logic := '0';
-  signal sample_valid4 : std_logic := '0';
-  signal sample_valid5 : std_logic := '0';
-
-  signal sample_valid_all : std_logic := '0';
-
-  signal raw_std_u0    : unsigned(23 downto 0) := (others => '0');
-
-  signal value13_u  : unsigned(12 downto 0) := (others => '0');
-  signal value13_slv: std_logic_vector(12 downto 0) := (others => '0');
+  signal pwm_pct : std_logic_vector(7 downto 0) := (others => '0');
 
   signal s_red   : std_logic := '0';
   signal s_green : std_logic := '0';
@@ -76,110 +61,43 @@ begin
   process(clk_50MHz)
   begin
     if rising_edge(clk_50MHz) then
-      if reset = '1' then
-        ck_25 <= '0';
-      else
-        ck_25 <= not ck_25;
-      end if;
+      ck_25 <= not ck_25;
     end if;
   end process;
 
-  U_HX6: entity work.hx711_reader
+  U_INPUT: entity work.input_value
+    port map(
+      clk           => clk_50MHz,
+      btn_tare_par  => btn_tare_par,
+      btn_cal_par   => btn_cal_par,
+      btn_tare_peso => btn_tare_peso,
+      btn_cal_peso  => btn_cal_peso,
+      hx_dout0      => hx_dout0,
+      hx_dout1      => hx_dout1,
+      hx_dout2      => hx_dout2,
+      hx_dout3      => hx_dout3,
+      hx_dout4      => hx_dout4,
+      hx_dout5      => hx_dout5,
+      hx_sck        => hx_sck,
+      par_centi     => par_centi,
+      peso_deci     => peso_deci,
+      peso_gram     => peso_gram
+    );
+
+  U_PWM: entity work.pwm_sw
     generic map(
       CLK_HZ => 50_000_000,
-      SCK_HZ => 50_000
+      PWM_HZ => 100
     )
     port map(
       clk      => clk_50MHz,
-      reset    => reset,
-      hx_dout0 => hx_dout0,
-      hx_dout1 => hx_dout1,
-      hx_dout2 => hx_dout2,
-      hx_dout3 => hx_dout3,
-      hx_dout4 => hx_dout4,
-      hx_dout5 => hx_dout5,
-      hx_sck   => hx_sck,
-      raw_s0   => raw_s_slv0,
-      raw_s1   => raw_s_slv1,
-      raw_s2   => raw_s_slv2,
-      raw_s3   => raw_s_slv3,
-      raw_s4   => raw_s_slv4,
-      raw_s5   => raw_s_slv5,
-      valid_o  => sample_valid_all
+      enable   => sw(6),
+      duty_sel => sw(5 downto 0),
+      pwm_out  => pwm_out,
+      duty_pct => pwm_pct
     );
 
-  U_IN0: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv0,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv0,
-      valid_o   => sample_valid0
-    );
-
-  U_IN1: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv1,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv1,
-      valid_o   => sample_valid1
-    );
-
-  U_IN2: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv2,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv2,
-      valid_o   => sample_valid2
-    );
-
-  U_IN3: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv3,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv3,
-      valid_o   => sample_valid3
-    );
-
-  U_IN4: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv4,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv4,
-      valid_o   => sample_valid4
-    );
-
-  U_IN5: entity work.input_value
-    port map(
-      clk       => clk_50MHz,
-      reset     => reset,
-      raw_s_i   => raw_s_slv5,
-      valid_i   => sample_valid_all,
-      raw_s_o   => open,
-      raw_std_o => raw_std_slv5,
-      valid_o   => sample_valid5
-    );
-
-  raw_std_u0 <= unsigned(raw_std_slv0);
-
-  value13_u   <= raw_std_u0(23 downto 11);
-  value13_slv <= std_logic_vector(value13_u);
-
-  U_7SEG: entity work.sevenseg_dec13
+	 U_7SEG: entity work.sevenseg_dec13
     generic map(
       CLK_HZ     => 50_000_000,
       REFRESH_HZ => 1000,
@@ -187,10 +105,10 @@ begin
     )
     port map(
       clk      => clk_50MHz,
-      reset    => reset,
-      value_in => value13_slv,
+      value_main => peso_gram,
+      value_alt  => pwm_pct,
+      sel_alt    => sw(7),
       seg      => seg,
-      dp       => dp,
       an       => an
     );
 
@@ -212,13 +130,8 @@ begin
   U_GRAPH: entity work.graph13_text_dec
     port map(
       clk50     => clk_50MHz,
-      reset     => reset,
-      raw24_in0 => raw_std_slv0,
-      raw24_in1 => raw_std_slv1,
-      raw24_in2 => raw_std_slv2,
-      raw24_in3 => raw_std_slv3,
-      raw24_in4 => raw_std_slv4,
-      raw24_in5 => raw_std_slv5,
+      par_centi => par_centi,
+      peso_deci => peso_deci,
       pixel_row => pixel_row,
       pixel_col => pixel_col,
       red       => s_red,
